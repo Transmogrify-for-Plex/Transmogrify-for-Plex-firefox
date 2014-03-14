@@ -6,6 +6,8 @@
   "author": "Moussekateer",
   "license": "GPLv3",
   "version": "0.5.0",
+  "icon": "data/resources/icon48.png",
+  "icon64": "data/resources/icon64.png",
   "preferences": [{
     "type": "control",
     "label": "Open Preferences",
