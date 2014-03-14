@@ -2,7 +2,7 @@ Transmogrify for Plex
 ==============
 **Transmogrify for Plex adds several features to the Plex/Web 2.0 client for Plex.**
 
-Submitted to addons.mozilla.org for review
+Get it at https://addons.mozilla.org/en-US/firefox/addon/transmogrify-for-plex/
 
 Chrome version can be found at https://github.com/Moussekateer/Transmogrify-for-Plex-chrome
 
