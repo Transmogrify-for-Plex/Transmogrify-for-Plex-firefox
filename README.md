@@ -18,6 +18,7 @@ Features
 
 Version History
 --------------
+- v0.5.1 - extension now loads faster on plex pages, removed unnecessary code
 - v0.5.0 - initial release
 
 Building the extension
