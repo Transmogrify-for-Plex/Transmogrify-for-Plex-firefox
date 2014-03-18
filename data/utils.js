@@ -73,53 +73,57 @@ utils = {
     },
 
     setDefaultOptions: function(callback) {
-        utils.storage_get_all(function(result) {
-            if (!("movie_trailers" in result)) {
+        utils.storage_get_all(function(results) {
+            if (!("movie_trailers" in results)) {
                 utils.storage_set("movie_trailers", "on");
             }
 
-            if (!("letterboxd_link" in result)) {
+            if (!("letterboxd_link" in results)) {
                 utils.storage_set("letterboxd_link", "on");
             }
 
-            if (!("random_picker" in result)) {
+            if (!("random_picker" in results)) {
                 utils.storage_set("random_picker", "on");
             }
 
-            if (!("missing_episodes" in result)) {
+            if (!("missing_episodes" in results)) {
                 utils.storage_set("missing_episodes", "on");
             }
 
-            if (!("rotten_tomatoes_link" in result)) {
+            if (!("rotten_tomatoes_link" in results)) {
                 utils.storage_set("rotten_tomatoes_link", "off");
             }
 
-            if (!("rotten_tomatoes_audience" in result)) {
+            if (!("rotten_tomatoes_audience" in results)) {
                 utils.storage_set("rotten_tomatoes_audience", "on");
             }
 
-            if (!("rotten_tomatoes_citizen" in result)) {
+            if (!("rotten_tomatoes_citizen" in results)) {
                 utils.storage_set("rotten_tomatoes_citizen", "non_us");
             }
 
-            if (!("trakt_movies" in result)) {
+            if (!("trakt_movies" in results)) {
                 utils.storage_set("trakt_movies", "on");
             }
 
-            if (!("trakt_shows" in result)) {
+            if (!("trakt_shows" in results)) {
                 utils.storage_set("trakt_shows", "on");
             }
 
-            if (!("plex_server_address" in result) || !("plex_server_port" in result)) {
+            if (!("plex_server_address" in results) || !("plex_server_port" in results)) {
                 utils.storage_set("plex_server_address", "");
                 utils.storage_set("plex_server_port", "");
             }
 
-            if (!("last_version" in result)) {
+            if (!("canistreamit" in results)) {
+                utils.storage_set("canistreamit", "off");
+            }
+
+            if (!("last_version" in results)) {
                 utils.storage_set("last_version", "");
             }
 
-            if (!("debug" in result)) {
+            if (!("debug" in results)) {
                 utils.storage_set("debug", "off");
             }
 
