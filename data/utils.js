@@ -9,6 +9,10 @@ utils = {
         return url;
     },
 
+    openOptionsPage: function() {
+        self.port.emit("open_options_page", {});
+    },
+
     insertOverlay: function() {
         // don't run if overlay exists on page
         debug("Checking if overlay already exists before creating");
