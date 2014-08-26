@@ -43,3 +43,13 @@ To build download and install the [Add-on SDK](https://developer.mozilla.org/en-
 To run it in a developers profile run:
 
     <sdk_directory>/bin/cfx run
+
+![trailer and rotten tomatoes feature](http://i.imgur.com/61lCbn9.jpg)
+
+![actor profile feature](http://i.imgur.com/zCmRb39.jpg)
+
+![trailer feature](http://i.imgur.com/yl8sNUr.png)
+
+![random picker feature](http://i.imgur.com/lLMw5Kk.jpg)
+
+![missing episodes feature](http://i.imgur.com/6CKE3Bl.jpg)
