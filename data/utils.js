@@ -49,17 +49,43 @@ utils = {
         });
     },
 
+    cache_set: function(key, data) {
+        var hash = {"data": data, "timestamp": new Date().getTime()};
+        utils.storage_set(key, hash);
+    },
+
+    cache_get: function(key, callback) {
+        utils.storage_get(key, function(result) {
+            if (result) {
+                // check if cached data is older than 5 days
+                if (new Date().getTime() - result["timestamp"] > 432000000) {
+                    debug("Stale cache, recaching");
+                    callback(null);
+                }
+                else {
+                    debug("Cache hit");
+                    var data = result["data"];
+                    callback(data);
+                }
+            }
+            else {
+                debug("Cache miss");
+                callback(null);
+            }
+        });
+    },
+
     getResourcePath: function(resource) {
         return (self.options.resourcepath + resource);
     },
 
     getApiKey: function(api_name) {
         var api_key = self.options.apikeys[api_name];
-        return api_key
+        return api_key;
     },
 
-    getXML: function(url, async, callback) {
-        debug("Fetching XML from " + url + " with async=" + async);
+    getXML: function(url, callback) {
+        debug("Fetching XML from " + url);
         self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
             var parser = new DOMParser();
@@ -68,8 +94,23 @@ utils = {
         });
     },
 
-    getJSON: function(url, async, callback) {
-        debug("Fetching JSON from " + url + " with async=" + async);
+    getJSONWithCache: function(url, callback) {
+        utils.cache_get("cache-" + url, function(result) {
+            if (result) {
+                callback(result);
+            }
+            else {
+                // cache missed or stale, grabbing new data
+                utils.getJSON(url, function(result) {
+                    utils.cache_set("cache-" + url, result);
+                    callback(result);
+                });
+            }
+        });
+    },
+
+    getJSON: function(url, callback) {
+        debug("Fetching JSON from " + url);
         self.port.emit("json_request", {"request_url": url});
         self.port.once("json_response-" + url, function(results) {
             callback(results);
