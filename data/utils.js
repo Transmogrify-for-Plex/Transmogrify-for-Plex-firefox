@@ -49,24 +49,32 @@ utils = {
         });
     },
 
+    storage_remove: function(key) {
+        self.port.emit("storage_remove", {"key": key});
+    },
+
     cache_set: function(key, data) {
-        var hash = {"data": data, "timestamp": new Date().getTime()};
-        utils.storage_set(key, hash);
+        utils.storage_get("cache_keys", function(cache_keys) {
+            // check if cache keys don't exist yet
+            if (!cache_keys) {
+                cache_keys = {};
+            }
+
+            // store cached url keys with timestamps
+            cache_keys[key] = {"timestamp": new Date().getTime()};
+            utils.storage_set("cache_keys", cache_keys);
+
+            // store cached data with url key
+            utils.storage_set(key, data);
+        });
     },
 
     cache_get: function(key, callback) {
         utils.storage_get(key, function(result) {
             if (result) {
-                // check if cached data is older than 5 days
-                if (new Date().getTime() - result["timestamp"] > 432000000) {
-                    debug("Stale cache, recaching");
-                    callback(null);
-                }
-                else {
-                    debug("Cache hit");
-                    var data = result["data"];
-                    callback(data);
-                }
+                debug("Cache hit");
+                var data = result["data"];
+                callback(data);
             }
             else {
                 debug("Cache miss");
@@ -95,6 +103,7 @@ utils = {
     },
 
     getJSONWithCache: function(url, callback) {
+        debug("Fetching JSON from " + url);
         utils.cache_get("cache-" + url, function(result) {
             if (result) {
                 callback(result);
