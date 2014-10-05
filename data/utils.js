@@ -55,6 +55,17 @@ utils = {
         return overlay;
     },
 
+    background_storage_set: function(key, value) {
+        self.port.emit("background_storage_set", {"key": key, "value": value});
+    },
+
+    background_storage_get: function(key, callback) {
+        self.port.emit("background_storage_get", {"key": key});
+        self.port.once("background_storage_response-" + key, function(results) {
+            callback(results);
+        });
+    },
+
     storage_set: function(key, value) {
         self.port.emit("storage_set", {"key": key, "value": value});
     },
