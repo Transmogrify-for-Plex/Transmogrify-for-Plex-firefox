@@ -49,6 +49,10 @@ To run it in a developers profile run:
 
     <sdk_directory>/bin/cfx run
 
+Enabling debugging
+--------------
+In the extension settings page enable debug mode. By default `console.log()` statements in SDK addons won't show up in the browser console. To allow them to show up you will need to open up `about:config`, create a new preference, name it `extensions.sdk.console.logLevel` and set the value as `all`.
+
 ![trailer and rotten tomatoes feature](http://i.imgur.com/61lCbn9.jpg)
 
 ![actor profile feature](http://i.imgur.com/zCmRb39.jpg)
