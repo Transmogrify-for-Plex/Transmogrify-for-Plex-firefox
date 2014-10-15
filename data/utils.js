@@ -3,6 +3,15 @@ var show_debug = null;
 utils = {
     debug: function(output) {
         if (show_debug == null) {
+
+            // show debug outputs until we get setting from storage
+            if (typeof output === "string") {
+                console.log("Transmogrify for Plex log: " + output);
+            }
+            else {
+                console.log(output);
+            }
+
             // set show_debug for first run on this page
             utils.storage_get("debug", function (debug_){
                 if (debug_ === "on") {
@@ -33,8 +42,17 @@ utils = {
         return url;
     },
 
+    getStatsURL: function() {
+        var url = self.options.statspage;
+        return url;
+    },
+
     openOptionsPage: function() {
         self.port.emit("open_options_page", {});
+    },
+
+    openStatsPage: function() {
+        self.port.emit("open_stats_page", {});
     },
 
     insertOverlay: function() {
@@ -53,6 +71,17 @@ utils = {
         utils.debug("Inserted overlay");
 
         return overlay;
+    },
+
+    background_storage_set: function(key, value) {
+        self.port.emit("background_storage_set", {"key": key, "value": value});
+    },
+
+    background_storage_get: function(key, callback) {
+        self.port.emit("background_storage_get", {"key": key});
+        self.port.once("background_storage_response-" + key, function(results) {
+            callback(results);
+        });
     },
 
     storage_set: function(key, value) {
@@ -210,6 +239,10 @@ utils = {
 
             if (!("actor_profiles" in results)) {
                 utils.storage_set("actor_profiles", "on");
+            }
+
+            if (!("stats_link" in results)) {
+                utils.storage_set("stats_link", "on");
             }
 
             if (!("last_version" in results)) {

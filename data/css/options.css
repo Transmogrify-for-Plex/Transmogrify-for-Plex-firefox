@@ -2,7 +2,7 @@ body {
     font-family: "segoe ui";
     font-size: 30px;
     color: #EEEEEE;
-    background-color: #141414;
+    background: url(../resources/background.png);
 }
 
 .label {
@@ -18,7 +18,7 @@ body {
 
 .field-row {
     clear: both;
-    padding-top: 15px;
+    padding-top: 12px;
 }
 
 .extra-options {
@@ -50,7 +50,7 @@ input[type=radio]:checked + label, input[type=checkbox]:checked + label {
 input[type=url], input[type="number"] {
     font-size: 25px;
     color: white;
-    background-color: #141414;
+    background: url(../resources/background.png);
     border: 1px solid #E69533;
 }
 
@@ -64,7 +64,7 @@ input[type="number"] {
 }
 
 #debug {
-    margin-top: 120px;
+    padding-top: 20px;
 }
 
 .thanks {
