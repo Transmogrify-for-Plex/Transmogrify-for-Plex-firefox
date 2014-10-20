@@ -146,10 +146,20 @@ utils = {
         return api_key;
     },
 
-    getXML: function(url, callback, timeout) {
+    getXML: function(url, callback) {
         utils.debug("Fetching XML from " + url);
-        self.port.emit("xml_request", {"request_url": url, "timeout": timeout});
+        self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
+            var parser = new DOMParser();
+            xmlDoc = parser.parseFromString(results, "text/xml");
+            callback(xmlDoc);
+        });
+    },
+
+    getXMLWithTimeout: function(url, timeout, callback) {
+        utils.debug("Fetching XML from " + url);
+        self.port.emit("xml_timeout_request", {"request_url": url, "timeout": timeout});
+        self.port.once("xml_timeout_response-" + url, function(results) {
             if (results) {
                 var parser = new DOMParser();
                 xmlDoc = parser.parseFromString(results, "text/xml");
