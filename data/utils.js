@@ -150,9 +150,14 @@ utils = {
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
-            var parser = new DOMParser();
-            xmlDoc = parser.parseFromString(results,"text/xml");
-            callback(xmlDoc);
+            if (results) {
+                var parser = new DOMParser();
+                xmlDoc = parser.parseFromString(results, "text/xml");
+                callback(xmlDoc);
+            }
+            else {
+                callback();
+            }
         });
     },
 
