@@ -146,9 +146,9 @@ utils = {
         return api_key;
     },
 
-    getXML: function(url, callback) {
+    getXML: function(url, callback, timeout) {
         utils.debug("Fetching XML from " + url);
-        self.port.emit("xml_request", {"request_url": url});
+        self.port.emit("xml_request", {"request_url": url, "timeout": timeout});
         self.port.once("xml_response-" + url, function(results) {
             if (results) {
                 var parser = new DOMParser();
