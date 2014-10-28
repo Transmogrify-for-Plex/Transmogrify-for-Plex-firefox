@@ -160,7 +160,7 @@ utils = {
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_timeout_request", {"request_url": url, "timeout": timeout});
         self.port.once("xml_timeout_response-" + url, function(results) {
-            if (results) {
+            if (results && typeof results === "object") {
                 var parser = new DOMParser();
                 xmlDoc = parser.parseFromString(results, "text/xml");
                 callback(xmlDoc);
