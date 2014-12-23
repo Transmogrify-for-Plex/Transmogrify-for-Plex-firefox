@@ -4,12 +4,43 @@ var active_server;
 var active_section;
 var last_updated_string;
 
-var resolution_mappings = {"1080" : "1080p", "720" : "720p", "480": "480p", "576": "576p", "sd": "SD"};
+var resolution_mappings = {"4k" : "4K",
+                           "1080" : "1080p",
+                           "720" : "720p",
+                           "480" : "480p",
+                           "576" : "576p",
+                           "sd" : "SD"
+                           };
 
 function formattedDateString(timestamp) {
     var date = new Date(timestamp);
     var formatted_date = date.toLocaleTimeString() + " " + date.toDateString();
     return formatted_date;
+}
+
+function showHeadings() {
+    var movies_visible = document.getElementById("movies-container").style.display === "block";
+    var shows_visible = document.getElementById("shows-container").style.display === "block";
+    var music_visible = document.getElementById("music-container").style.display === "block";
+
+    // there is probably a better way to do this
+    if (movies_visible && shows_visible && music_visible) {
+        document.getElementById("movies-heading").style.display = "block";
+        document.getElementById("shows-heading").style.display = "block";
+        document.getElementById("music-heading").style.display = "block";
+    }
+    else if (movies_visible && shows_visible) {
+        document.getElementById("movies-heading").style.display = "block";
+        document.getElementById("shows-heading").style.display = "block";
+    }
+    else if (movies_visible && music_visible) {
+        document.getElementById("movies-heading").style.display = "block";
+        document.getElementById("music-heading").style.display = "block";
+    }
+    else if (music_visible && shows_visible) {
+        document.getElementById("music-heading").style.display = "block";
+        document.getElementById("shows-heading").style.display = "block";
+    }
 }
 
 function showDisplay(type) {
@@ -20,28 +51,25 @@ function showDisplay(type) {
     if (active_section || type) {
         if ((active_section && active_section["type"] === "movie") || type === "movies") {
             document.getElementById("movies-container").style.display = "block";
-            document.getElementById("shows-container").style.display = "none";
         }
-        else {
+        else if ((active_section && active_section["type"] === "show") || type === "shows") {
             document.getElementById("shows-container").style.display = "block";
-            document.getElementById("movies-container").style.display = "none";
         }
+        else if ((active_section && active_section["type"] === "artist") || type === "music") {
+            document.getElementById("music-container").style.display = "block";
+        }
+    }
 
-        // hide headings, not needed when viewing libraries
-        document.getElementById("movies-heading").style.display = "none";
-        document.getElementById("shows-heading").style.display = "none";
-    }
-    else {
-        document.getElementById("movies-heading").style.display = "block";
-        document.getElementById("shows-heading").style.display = "block";
-        document.getElementById("movies-container").style.display = "block";
-        document.getElementById("shows-container").style.display = "block";
-    }
+    showHeadings();
 }
 
 function hideDisplay() {
     document.getElementById("movies-container").style.display = "none";
     document.getElementById("shows-container").style.display = "none";
+    document.getElementById("music-container").style.display = "none";
+    document.getElementById("movies-heading").style.display = "none";
+    document.getElementById("shows-heading").style.display = "none";
+    document.getElementById("music-heading").style.display = "none";
     document.getElementById("server-error-indicator").style.display = "none";
     document.getElementById("server-updated").style.display = "none";
 
@@ -71,7 +99,7 @@ function processLibrarySections(sections_xml) {
         var key = directories[i].getAttribute("key");
 
         // only return movie or tv show libraries
-        if (type === "movie" || type === "show") {
+        if (type === "movie" || type === "show" || type === "artist") {
             dir_metadata[key] = {"type": type, "title": title};
         }
     }
@@ -111,7 +139,6 @@ function getAllShows(address, port, plex_token, section_key, callback) {
             show_data["rating"] = shows_xml[i].getAttribute("rating");
             show_data["year"] = shows_xml[i].getAttribute("year");
             show_data["duration"] = shows_xml[i].getAttribute("duration");
-            show_data["rating_key"] = shows_xml[i].getAttribute("ratingKey");
 
             shows.push(show_data);
         }
@@ -136,6 +163,42 @@ function getAllEpisodes(address, port, plex_token, section, callback) {
         }
 
         callback(episodes);
+    });
+}
+
+function getAllSongs(address, port, plex_token, section, callback) {
+    var library_section_songs_url = "http://" + address + ":" + port + "/library/sections/" + section + "/all?type=10&X-Plex-Token=" + plex_token;
+    utils.getXML(library_section_songs_url, function(section_xml) {
+        var songs_xml = section_xml.getElementsByTagName("MediaContainer")[0].getElementsByTagName("Track");
+        var songs = [];
+        for (var i = 0; i < songs_xml.length; i++) {
+            var song_data = {};
+            song_data["added_at"] = songs_xml[i].getAttribute("addedAt");
+
+            var metadata_xml = songs_xml[i].getElementsByTagName("Media")[0];
+            song_data["bitrate"] = metadata_xml.getAttribute("bitrate");
+
+            songs.push(song_data);
+        }
+
+        callback(songs);
+    });
+}
+
+function getAllAlbums(address, port, plex_token, section, callback) {
+    var library_section_albums_url = "http://" + address + ":" + port + "/library/sections/" + section + "/all?type=9&X-Plex-Token=" + plex_token;
+    utils.getXML(library_section_albums_url, function(section_xml) {
+        var albums_xml = section_xml.getElementsByTagName("MediaContainer")[0].getElementsByTagName("Directory");
+        var albums = [];
+        for (var i = 0; i < albums_xml.length; i++) {
+            var album_data = {};
+            album_data["year"] = albums_xml[i].getAttribute("year");
+            album_data["added_at"] = albums_xml[i].getAttribute("addedAt");
+
+            albums.push(album_data);
+        }
+
+        callback(albums);
     });
 }
 
@@ -164,10 +227,18 @@ function getMoviesByGenre(address, port, plex_token, section_key, genre_key, cal
 }
 
 function getShowsByGenre(address, port, plex_token, section_key, genre_key, callback) {
-    var filtered_movies_url = "http://" + address + ":" + port + "/library/sections/" + section_key + "/all?genre=" + genre_key + "&X-Plex-Token=" + plex_token;
-    utils.getXML(filtered_movies_url, function(shows_xml) {
+    var filtered_shows_url = "http://" + address + ":" + port + "/library/sections/" + section_key + "/all?genre=" + genre_key + "&X-Plex-Token=" + plex_token;
+    utils.getXML(filtered_shows_url, function(shows_xml) {
         var shows = shows_xml.getElementsByTagName("MediaContainer")[0].getElementsByTagName("Directory");
         callback(shows);
+    });
+}
+
+function getAlbumsByGenre(address, port, plex_token, section_key, genre_key, callback) {
+    var filtered_albums_url = "http://" + address + ":" + port + "/library/sections/" + section_key + "/all?genre=" + genre_key + "&X-Plex-Token=" + plex_token;
+    utils.getXML(filtered_albums_url, function(albums_xml) {
+        var albums = albums_xml.getElementsByTagName("MediaContainer")[0].getElementsByTagName("Directory");
+        callback(albums);
     });
 }
 
@@ -215,13 +286,6 @@ function generateMovieStats(movies, genre_count) {
         else {
             year_count[year] = 1;
         }
-        // add missing years
-        var sorted_years = Object.keys(year_count).sort();
-        for (var j = sorted_years[0]; j < sorted_years[sorted_years.length - 1]; j++) {
-            if (!year_count[j]) {
-                year_count[j] = 0;
-            }
-        }
 
         // movies added over time
         // set date time to beginning of day to make it easy to work with
@@ -239,6 +303,14 @@ function generateMovieStats(movies, genre_count) {
         delete resolution_count[null];
     }
     delete year_count[NaN];
+
+    // add missing years
+    var sorted_years = Object.keys(year_count).sort();
+    for (var j = sorted_years[0]; j < sorted_years[sorted_years.length - 1]; j++) {
+        if (!year_count[j]) {
+            year_count[j] = 0;
+        }
+    }
 
     // collate movies added over time data
     var sorted_dates = dates_added.sort(function(a, b) {return a - b;});
@@ -336,13 +408,6 @@ function generateShowStats(shows, episodes, genre_count) {
         else {
             year_count[year] = 1;
         }
-        // add missing years
-        var sorted_years = Object.keys(year_count).sort();
-        for (var j = sorted_years[0]; j < sorted_years[sorted_years.length - 1]; j++) {
-            if (!year_count[j]) {
-                year_count[j] = 0;
-            }
-        }
     }
 
     // iterate over all episodes
@@ -372,6 +437,14 @@ function generateShowStats(shows, episodes, genre_count) {
         delete resolution_count[null];
     }
     delete year_count[NaN];
+
+    // add missing years
+    var sorted_years = Object.keys(year_count).sort();
+    for (var j = sorted_years[0]; j < sorted_years[sorted_years.length - 1]; j++) {
+        if (!year_count[j]) {
+            year_count[j] = 0;
+        }
+    }
 
     // collate episodes added over time data
     var sorted_dates = episodes_dates_added.sort(function(a, b) {return a - b;});
@@ -434,20 +507,134 @@ function generateShowStats(shows, episodes, genre_count) {
         };
 }
 
+function generateMusicStats(songs, albums, genre_count) {
+    var bitrate_count = {};
+    var year_count = {};
+    var songs_dates_added = [];
+    var albums_dates_added = [];
+
+    for (var i = 0; i < songs.length; i++) {
+        // bitrates count
+        var bitrate = songs[i]["bitrate"];
+        if (bitrate_count[bitrate]) {
+            bitrate_count[bitrate]++;
+        }
+        else {
+            bitrate_count[bitrate] = 1;
+        }
+
+        // songs added over time
+        // set date time to beginning of day to make it easy to work with
+        var song_added_at = new Date(parseInt(songs[i]["added_at"]) * 1000).setHours(0, 0, 0, 0);
+        songs_dates_added.push(song_added_at);
+    }
+
+    for (var i = 0; i < albums.length; i++) {
+        // years count
+        var year = parseInt(albums[i]["year"]);
+        if (year_count[year]) {
+            year_count[year]++;
+        }
+        else {
+            year_count[year] = 1;
+        }
+
+        // albums added over time
+        // set date time to beginning of day to make it easy to work with
+        var album_added_at = new Date(parseInt(albums[i]["added_at"]) * 1000).setHours(0, 0, 0, 0);
+        albums_dates_added.push(album_added_at);
+    }
+
+    // clean up, remove invalid data
+    delete bitrate_count[null];
+    delete year_count[NaN];
+
+    // add missing years
+    var sorted_years = Object.keys(year_count).sort();
+    for (var j = sorted_years[0]; j < sorted_years[sorted_years.length - 1]; j++) {
+        if (!year_count[j]) {
+            year_count[j] = 0;
+        }
+    }
+
+    // collate songs added over time data
+    var sorted_song_dates = songs_dates_added.sort(function(a, b) {return a - b;});
+    var today = new Date(Date.now());
+    var start_date = new Date(sorted_song_dates[0]);
+    var songs_date_added_count = {};
+    var total_count = 0;
+    // iterate over dates from first song added date added to today
+    for (var d = start_date; d <= today; d.setDate(d.getDate() + 1)) {
+        var current_timestamp = d.getTime();
+        var day_count = 0;
+        for (var i = 0; i < sorted_song_dates.length; i++) {
+            if (sorted_song_dates[i] === current_timestamp) {
+                day_count += 1;
+            }
+        }
+
+        // only add date to array if songs were added that day
+        if (day_count > 0) {
+            total_count += day_count;
+
+            var date_string = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+            songs_date_added_count[date_string] = total_count;
+        }
+    }
+
+    // collate albums added over time data
+    var sorted_album_dates = albums_dates_added.sort(function(a, b) {return a - b;});
+    var today = new Date(Date.now());
+    var start_date = new Date(sorted_album_dates[0]);
+    var albums_date_added_count = {};
+    var total_count = 0;
+    // iterate over dates from first album added date added to today
+    for (var d = start_date; d <= today; d.setDate(d.getDate() + 1)) {
+        var current_timestamp = d.getTime();
+        var day_count = 0;
+        for (var i = 0; i < sorted_album_dates.length; i++) {
+            if (sorted_album_dates[i] === current_timestamp) {
+                day_count += 1;
+            }
+        }
+
+        // only add date to array if albums were added that day
+        if (day_count > 0) {
+            total_count += day_count;
+
+            var date_string = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+            albums_date_added_count[date_string] = total_count;
+        }
+    }
+
+    return {
+        "bitrate_count": bitrate_count,
+        "year_count": year_count,
+        "genre_count": genre_count,
+        "date_added_count": {"songs": songs_date_added_count, "albums": albums_date_added_count}
+        };
+}
+
 function generateStats(address, port, plex_token, callback) {
     utils.debug("Generating stats for " + address + ":" + port);
 
     var all_movies = [];
     var all_shows = [];
     var all_episodes = [];
+    var all_songs = [];
+    var all_albums = [];
     var movie_genres_count = {};
     var show_genres_count = {};
+    var album_genres_count = {};
 
     var section_movies = {};
     var section_shows = {};
     var section_episodes = {};
+    var section_songs = {};
+    var section_albums = {};
     var section_movie_genres_count = {};
     var section_show_genres_count = {};
+    var section_album_genres_count = {};
 
     getSections(address, port, plex_token, function(sections_xml) {
         // check if no response from server
@@ -469,6 +656,7 @@ function generateStats(address, port, plex_token, callback) {
 
                 var movie_stats = generateMovieStats(all_movies, movie_genres_count);
                 var show_stats = generateShowStats(all_shows, all_episodes, show_genres_count);
+                var music_stats = generateMusicStats(all_songs, all_albums, album_genres_count);
 
                 var per_section_movie_stats = {};
                 for (var section_key in section_movies) {
@@ -482,7 +670,13 @@ function generateStats(address, port, plex_token, callback) {
                     per_section_show_stats[section_key] = section_show_stats;
                 }
 
-                callback(movie_stats, per_section_movie_stats, show_stats, per_section_show_stats);
+                var per_section_music_stats = {};
+                for (var section_key in section_albums) {
+                    var section_music_stats = generateMusicStats(section_songs[section_key], section_albums[section_key], section_album_genres_count[section_key]);
+                    per_section_music_stats[section_key] = section_music_stats;
+                }
+
+                callback(movie_stats, per_section_movie_stats, show_stats, per_section_show_stats, music_stats, per_section_music_stats);
             }
         };
 
@@ -525,9 +719,10 @@ function generateStats(address, port, plex_token, callback) {
                                 }(genre_key));
                             }
                             task_completed();
-                        })
+                        });
                     });
                 }
+
                 else if (processed_sections[section_key]["type"] === "show") {
                     task_counter++;
 
@@ -565,7 +760,7 @@ function generateStats(address, port, plex_token, callback) {
                                 }(genre_key));
                             }
                             task_completed();
-                        })
+                        });
                     });
 
                     // get all tv show episodes for section
@@ -573,6 +768,54 @@ function generateStats(address, port, plex_token, callback) {
                     getAllEpisodes(address, port, plex_token, section_key, function(episodes) {
                         all_episodes = all_episodes.concat(episodes);
                         section_episodes[section_key] = section_episodes[section_key].concat(episodes);
+                        task_completed();
+                    });
+                }
+
+                else if (processed_sections[section_key]["type"] === "artist") {
+                    task_counter++;
+
+                    section_album_genres_count[section_key] = {};
+                    // get all songs for section
+                    getAllSongs(address, port, plex_token, section_key, function(songs) {
+                        all_songs = all_songs.concat(songs);
+                        section_songs[section_key] = songs;
+
+                        // because the plex web api calls for library sections only returns the first two genres
+                        // of each album we need to get all the genre mappings first and count the number of albums
+                        // returned by the api with that genre filtered out
+                        getSectionGenres(address, port, plex_token, section_key, function(genres) {
+                            task_counter += Object.keys(genres).length;
+
+                            for (var genre_key in genres) {
+                                (function (genre_key) {
+                                    var genre_title = genres[genre_key];
+                                    getAlbumsByGenre(address, port, plex_token, section_key, genre_key, function(genre_albums) {
+                                        if (album_genres_count[genre_title]) {
+                                            album_genres_count[genre_title] += genre_albums.length;
+                                        }
+                                        else {
+                                            album_genres_count[genre_title] = genre_albums.length;
+                                        }
+                                        if (section_album_genres_count[section_key][genre_title]) {
+                                            section_album_genres_count[section_key][genre_title] += genre_albums.length;
+                                        }
+                                        else {
+                                            section_album_genres_count[section_key][genre_title] = genre_albums.length;
+                                        }
+                                        task_completed();
+                                    });
+                                }(genre_key));
+                            }
+                            task_completed();
+                        });
+                    });
+
+                    task_counter++;
+                    getAllAlbums(address, port, plex_token, section_key, function(albums) {
+                        all_albums = all_albums.concat(albums);
+                        section_albums[section_key] = albums;
+
                         task_completed();
                     });
                 }
@@ -610,12 +853,13 @@ function getStats(server, section, force, callback) {
             else {
                 var movie_stats = data["movie_stats"];
                 var show_stats = data["show_stats"];
-                callback({"movie_stats": movie_stats, "show_stats": show_stats}, timestamp);
+                var music_stats = data["music_stats"];
+                callback({"movie_stats": movie_stats, "show_stats": show_stats, "music_stats": music_stats}, timestamp);
             }
         }
         else {
             utils.debug("Cache miss for " + cache_key);
-            generateStats(address, port, plex_token, function(movie_stats, movie_section_stats, show_stats, show_section_stats) {
+            generateStats(address, port, plex_token, function(movie_stats, movie_section_stats, show_stats, show_section_stats, music_stats, music_section_stats) {
                 if (movie_stats === null) {
                     // couldn't reach server to get data
                     utils.debug("Couldn't reach server " + address + ":" + port + " to get stat data");
@@ -623,7 +867,7 @@ function getStats(server, section, force, callback) {
                     return;
                 }
                 var timestamp = new Date().getTime();
-                var hash = {"name": name, "movie_stats": movie_stats, "show_stats": show_stats, "timestamp": timestamp};
+                var hash = {"name": name, "movie_stats": movie_stats, "show_stats": show_stats, "music_stats": music_stats, "timestamp": timestamp};
                 utils.storage_set(cache_key, hash);
 
                 for (var section_key in movie_section_stats) {
@@ -636,7 +880,12 @@ function getStats(server, section, force, callback) {
                     utils.storage_set("cache-stats-" + machine_identifier + "-" + section_key, section_hash);
                 }
 
-                callback({"movie_stats": movie_stats, "show_stats": show_stats}, timestamp);
+                for (var section_key in music_section_stats) {
+                    var section_hash = {"stats": music_section_stats[section_key], "timestamp": timestamp};
+                    utils.storage_set("cache-stats-" + machine_identifier + "-" + section_key, section_hash);
+                }
+
+                callback({"movie_stats": movie_stats, "show_stats": show_stats, "music_stats": music_stats}, timestamp);
             });
         }
     });
@@ -797,7 +1046,10 @@ function switchToServer(server, section_key, refresh) {
         var statsPresentForType = function(type) {
             var stats_type = stats[type + "_stats"]
             for (var key in stats_type) {
-                if (Object.keys(stats_type[key]).length > 1) {
+                var stats_keys = Object.keys(stats_type[key]).sort();
+                // small hack for date_added_count key in music_stats always containing "albums" and "songs" even if empty
+                console.log(stats_keys)
+                if (stats_keys.length > 1 && JSON.stringify(stats_keys) != JSON.stringify(["albums", "songs"])) {
                     return true;
                 }
             }
@@ -806,6 +1058,7 @@ function switchToServer(server, section_key, refresh) {
 
         var movies_present = statsPresentForType("movie");
         var shows_present = statsPresentForType("show");
+        var music_present = statsPresentForType("music");
 
         setLastUpdated(last_updated);
 
@@ -822,7 +1075,7 @@ function switchToServer(server, section_key, refresh) {
                 drawMovieContentRatingChart(stats["content_rating_count"]);
                 drawMovieResolutionChart(stats["resolution_count"]);
             }
-            else {
+            else if (active_section["type"] === "show") {
                 // draw tv show charts
                 drawShowYearsChart(stats["year_count"]);
                 drawShowGenreChart(stats["genre_count"]);
@@ -831,17 +1084,24 @@ function switchToServer(server, section_key, refresh) {
                 drawShowContentRatingChart(stats["content_rating_count"]);
                 drawShowResolutionChart(stats["resolution_count"]);
             }
+            else {
+                // draw music charts
+                drawAlbumYearsChart(stats["year_count"]);
+                drawAlbumGenreChart(stats["genre_count"]);
+                drawMusicDateAddedChart(stats["date_added_count"]);
+                drawMusicBitrateChart(stats["bitrate_count"]);
+            }
         }
         else {
-            // only display both movie and show charts if there's both movie and show libraries on the server
-            if (movies_present && shows_present) {
-                showDisplay();
-            }
-            else if (movies_present) {
+            // only display charts if library type exists for server
+            if (movies_present) {
                 showDisplay("movies");
             }
-            else {
+            if (shows_present) {
                 showDisplay("shows");
+            }
+            if (music_present) {
+                showDisplay("music");
             }
 
             // draw all charts
@@ -858,6 +1118,11 @@ function switchToServer(server, section_key, refresh) {
             drawShowDateAddedChart(stats["show_stats"]["episodes_date_added_count"]);
             drawShowContentRatingChart(stats["show_stats"]["content_rating_count"]);
             drawShowResolutionChart(stats["show_stats"]["resolution_count"]);
+
+            drawAlbumYearsChart(stats["music_stats"]["year_count"]);
+            drawAlbumGenreChart(stats["music_stats"]["genre_count"]);
+            drawMusicDateAddedChart(stats["music_stats"]["date_added_count"]);
+            drawMusicBitrateChart(stats["music_stats"]["bitrate_count"]);
         }
     });
 }

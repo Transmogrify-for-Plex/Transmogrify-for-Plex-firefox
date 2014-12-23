@@ -459,3 +459,206 @@ function drawShowResolutionChart(resolution_data) {
         }
     });
 }
+
+// music charts
+function drawAlbumYearsChart(year_data) {
+    var x_labels = ["x"];
+    var y_data = ["Count"];
+    for (var year in year_data) {
+        x_labels.push(year);
+        y_data.push(year_data[year]);
+    }
+
+    var chart = c3.generate({
+        bindto: "#music-year-chart",
+        data: {
+            x: "x",
+            type: "bar",
+            columns: [
+                x_labels,
+                y_data,
+            ],
+            color: function(color, d) {
+                return "#109618";
+            }
+        },
+        bar: {
+            width: {
+                ratio: 0.7
+            }
+        },
+        axis: {
+            x: {
+                type: "number",
+                label: {
+                    text: "Year",
+                    position: "outer-center"
+                },
+                tick: {
+                    fit: true
+                }
+            },
+            y: {
+                label: {
+                    text: "Number of Albums",
+                    position: "outer-middle"
+                }
+            }
+        },
+        grid: {
+            x: {
+                show: false
+            },
+            y: {
+                show: true
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+}
+
+function drawAlbumGenreChart(genre_data) {
+    var chart = c3.generate({
+        bindto: "#album-genre-chart",
+        data: {
+            json: genre_data,
+            type: "donut"
+        },
+        donut: {
+            label: {
+                format: function(value, ratio, id) {
+                    return id;
+                }
+            },
+            width: 140
+        },
+        legend: {
+            show: true,
+            position: "right"
+        },
+        tooltip: {
+            format: {
+                value: function(value, ratio, id) {
+                    var format = d3.format(".1%");
+                    return value + " Albums (" + format(ratio) + ")";
+                }
+            }
+        }
+    });
+}
+
+function drawMusicDateAddedChart(date_data) {
+    var song_data = date_data["songs"];
+    var album_data = date_data["albums"];
+
+    var x_labels = ["x"];
+    var y_song_data = ["Total songs"];
+    var y_album_data = ["Total albums"];
+
+    for (var date in album_data) {
+        x_labels.push(date);
+        y_song_data.push(song_data[date]);
+        y_album_data.push(album_data[date]);
+    }
+
+    var chart = c3.generate({
+        bindto: "#music-date-added-chart",
+        data: {
+            x: "x",
+            type: "area",
+            columns: [
+                x_labels,
+                y_song_data,
+                y_album_data
+            ],
+            color: function(color, d) {
+                if (d === "Total songs" || d["id"] === "Total songs") {
+                    return "#1F77B4";
+                }
+                else {
+                    return "#FFEE00";
+                }
+            }
+        },
+        axis: {
+            x: {
+                type: "timeseries",
+                label: {
+                    text: "Date",
+                    position: "outer-center"
+                },
+                tick: {
+                    format: "%Y-%m-%d",
+                    fit: false
+                }
+            },
+            y: {
+                label: {
+                    text: "Number of Songs/Albums",
+                    position: "outer-middle"
+                }
+            }
+        },
+        grid: {
+            y: {
+                show: true
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+}
+
+function drawMusicBitrateChart(bitrate_data) {
+    var x_labels = ["x"];
+    var y_data = ["Count"];
+
+    for (var bitrate in bitrate_data) {
+        x_labels.push(bitrate);
+        y_data.push(bitrate_data[bitrate]);
+    }
+
+    var chart = c3.generate({
+        bindto: "#music-bitrate-chart",
+        data: {
+            x: "x",
+            type: "spline",
+            columns: [
+                x_labels,
+                y_data
+            ],
+            color: function(color, d) {
+                return "#E377C2";
+            }
+        },
+        axis: {
+            x: {
+                type: "number",
+                label: {
+                    text: "Bitrate (kbps)",
+                    position: "outer-center"
+                },
+                tick: {
+                    fit: false
+                }
+            },
+            y: {
+                label: {
+                    text: "Number of Songs",
+                    position: "outer-middle"
+                }
+            }
+        },
+        grid: {
+            y: {
+                show: true
+            }
+        },
+        legend: {
+            show: false
+        }
+    });
+}
