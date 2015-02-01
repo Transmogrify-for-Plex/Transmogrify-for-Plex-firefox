@@ -8,6 +8,7 @@
   "version": "1.3.2",
   "icon": "data/resources/icon48.png",
   "icon64": "data/resources/icon64.png",
+  "permissions": {"private-browsing": true},
   "preferences": [{
     "type": "control",
     "label": "Open Preferences",
