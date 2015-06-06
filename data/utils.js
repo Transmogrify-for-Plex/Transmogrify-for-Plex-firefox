@@ -28,8 +28,8 @@ utils = {
                     if ("access_token" in output_) {
                         output_["access_token"] = "XXXXXXXXXXXXXXXXXXXX";
                     }
-                    if ("address" in output_) {
-                        output_["address"] = "XXX.XXX.X.XX";
+                    if ("uri" in output_) {
+                        output_["uri"] = "XXX.XXX.X.XX";
                     }
 
                     console.log(output_);
@@ -181,6 +181,11 @@ utils = {
     },
 
     getXML: function(url, callback) {
+        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
+            callback(null);
+            return;
+        }
+
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
@@ -191,6 +196,11 @@ utils = {
     },
 
     getXMLWithTimeout: function(url, timeout, callback) {
+        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
+            callback(null);
+            return;
+        }
+
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_timeout_request", {"request_url": url, "timeout": timeout});
         self.port.once("xml_timeout_response-" + url, function(results) {
@@ -222,6 +232,11 @@ utils = {
     },
 
     getJSON: function(url, callback) {
+        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
+            callback(null);
+            return;
+        }
+        
         utils.debug("Fetching JSON from " + url);
         self.port.emit("json_request", {"request_url": url});
         self.port.once("json_response-" + url, function(results) {
@@ -271,9 +286,8 @@ utils = {
                 utils.storage_set("trakt_shows", "on");
             }
 
-            if (!("plex_server_address" in settings) || !("plex_server_port" in settings)) {
-                utils.storage_set("plex_server_address", "");
-                utils.storage_set("plex_server_port", "");
+            if (!("plex_server_uri" in settings)) {
+                utils.storage_set("plex_server_uri", "");
             }
 
             if (!("split_added_deck" in settings)) {
