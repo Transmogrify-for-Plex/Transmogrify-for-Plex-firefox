@@ -71,3 +71,8 @@ In the extension settings page enable debug mode. By default `console.log()` sta
 ![random picker feature](http://i.imgur.com/lLMw5Kk.jpg)
 
 ![missing episodes feature](http://i.imgur.com/6CKE3Bl.jpg)
+
+Contributors
+--------------
+* [ccarpo](https://github.com/ccarpo)
+* [Dahlgren](https://github.com/Dahlgren)
