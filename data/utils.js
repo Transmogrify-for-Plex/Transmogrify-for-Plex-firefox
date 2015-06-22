@@ -181,11 +181,6 @@ utils = {
     },
 
     getXML: function(url, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
@@ -196,11 +191,6 @@ utils = {
     },
 
     getXMLWithTimeout: function(url, timeout, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_timeout_request", {"request_url": url, "timeout": timeout});
         self.port.once("xml_timeout_response-" + url, function(results) {
@@ -232,11 +222,6 @@ utils = {
     },
 
     getJSON: function(url, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-        
         utils.debug("Fetching JSON from " + url);
         self.port.emit("json_request", {"request_url": url});
         self.port.once("json_response-" + url, function(results) {
