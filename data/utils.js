@@ -205,7 +205,7 @@ utils = {
         });
     },
 
-    getJSONWithCache: function(url, callback) {
+    getJSONWithCache: function(url, callback, custom_headers) {
         utils.debug("Fetching JSON from " + url);
         utils.cache_get("cache-" + url, function(result) {
             if (result) {
@@ -218,12 +218,12 @@ utils = {
                     callback(result);
                 });
             }
-        });
+        }, custom_headers);
     },
 
-    getJSON: function(url, callback) {
+    getJSON: function(url, callback, custom_headers) {
         utils.debug("Fetching JSON from " + url);
-        self.port.emit("json_request", {"request_url": url});
+        self.port.emit("json_request", {"request_url": url, "custom_headers" : custom_headers});
         self.port.once("json_response-" + url, function(results) {
             callback(results);
         });
