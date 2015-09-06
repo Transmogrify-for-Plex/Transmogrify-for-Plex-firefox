@@ -181,11 +181,6 @@ utils = {
     },
 
     getXML: function(url, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_request", {"request_url": url});
         self.port.once("xml_response-" + url, function(results) {
@@ -196,11 +191,6 @@ utils = {
     },
 
     getXMLWithTimeout: function(url, timeout, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-
         utils.debug("Fetching XML from " + url);
         self.port.emit("xml_timeout_request", {"request_url": url, "timeout": timeout});
         self.port.once("xml_timeout_response-" + url, function(results) {
@@ -215,7 +205,7 @@ utils = {
         });
     },
 
-    getJSONWithCache: function(url, callback) {
+    getJSONWithCache: function(url, callback, custom_headers) {
         utils.debug("Fetching JSON from " + url);
         utils.cache_get("cache-" + url, function(result) {
             if (result) {
@@ -228,17 +218,12 @@ utils = {
                     callback(result);
                 });
             }
-        });
+        }, custom_headers);
     },
 
-    getJSON: function(url, callback) {
-        if (window.location.protocol === "https:" && url.indexOf("http://") === 0) {
-            callback(null);
-            return;
-        }
-        
+    getJSON: function(url, callback, custom_headers) {
         utils.debug("Fetching JSON from " + url);
-        self.port.emit("json_request", {"request_url": url});
+        self.port.emit("json_request", {"request_url": url, "custom_headers" : custom_headers});
         self.port.once("json_response-" + url, function(results) {
             callback(results);
         });
