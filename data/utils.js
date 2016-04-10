@@ -216,9 +216,9 @@ utils = {
                 utils.getJSON(url, function(result) {
                     utils.cache_set("cache-" + url, result);
                     callback(result);
-                });
+                }, custom_headers);
             }
-        }, custom_headers);
+        });
     },
 
     getJSON: function(url, callback, custom_headers) {
