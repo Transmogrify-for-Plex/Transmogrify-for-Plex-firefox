@@ -6,7 +6,7 @@
   "description": "Adds several features to the Plex/Web 2.0 client for Plex",
   "author": "Moussekateer",
   "license": "GPLv3",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "icon": "data/resources/icon48.png",
   "icon64": "data/resources/icon64.png",
   "permissions": {"private-browsing": true},

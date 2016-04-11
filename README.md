@@ -18,7 +18,6 @@ Features
 - Adds a random tv show/movie picker
 - Adds a missing seasons and episodes view
 - Adds a Can I Stream It? widget for movies
-- Adds a movie/tv show filter for the main dashboard
 - Adds an actor profile for cast members on movie pages
 - Adds a server statistics page
 
@@ -26,10 +25,13 @@ Contributors
 --------------
 * [ccarpo](https://github.com/ccarpo)
 * [Dahlgren](https://github.com/Dahlgren)
+* [dgw](https://github.com/dgw)
+* [leonard84](https://github.com/leonard84)
 * [pdille](https://github.com/pdille)
 
 Version History
 --------------
+- **v1.4.1** - Remove split_added_deck plugin, fix issue with fetching cached data.
 - **v1.4.0** - YouTube v3 support, HTTPS server support, trakt.tv functionality fixed, and minor CSS changes
 - **v1.3.6** - disable YouTube trailers
 - **v1.3.5** - use new resources endpoint to lookup servers for SSL support
