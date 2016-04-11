@@ -2,6 +2,7 @@
   "name": "transmogrifyforplex",
   "title": "Transmogrify for Plex",
   "id": "transmogrifyforplex@moussekateer",
+  "main": "lib/main.js",
   "description": "Adds several features to the Plex/Web 2.0 client for Plex",
   "author": "Moussekateer",
   "license": "GPLv3",
